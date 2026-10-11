@@ -10,13 +10,14 @@
 
 <p align="center">
   <b>One screen for the whole team. One key to take over any agent.</b><br>
-  A meta-agent splits your goal across a team of coding agents. Each one is a real session of
-  its own agent CLI, on its own branch. You watch them all from one terminal and step into any
-  of them whenever you want.
+  A meta-agent leads one layer of member agents. Each member is a plain Claude Code or Codex
+  session on its own branch. You watch the whole team from one terminal and step into any of
+  them whenever you want.
 </p>
 
 <p align="center">
   <a href="#why">Why</a> ·
+  <a href="#three-things-with-the-least-structure">Three things</a> ·
   <a href="#how-a-run-goes">How a Run goes</a> ·
   <a href="#define-your-team-and-its-rules-with-a-plugin">Your team and its rules</a> ·
   <a href="#execution-and-isolation">Execution and isolation</a> ·
@@ -34,18 +35,42 @@ five on a real change, it gets hard to follow.
   <img src="docs/assets/one-session.svg" alt="Left: many agents inside one session, where every subagent writes into the same scrollback, nobody's state is visible and none can be stepped into. Right: the same team in oat-agents, one row per agent with its state, each its own session on its own branch, and enter takes over any of them." width="100%">
 </p>
 
-Inside one session, every subagent's output lands in the same scrollback. You can't see which
-one is stuck, and when one goes wrong you can't talk to it directly. All you can do is ask the
-parent to pass a message along.
+A team of coding agents runs into two problems.
 
-oat-agents takes the subagents out of the session. Each agent runs in its own tmux session,
-with its own git worktree and branch, in the agent CLI's own interactive interface. One of
-them, the meta-agent, leads: it splits your goal into pieces and hands each piece to a member
-agent. The live view puts the whole team on one screen, one row per agent.
+The first is that the information doesn't reach you. Inside one session, every subagent's
+output lands in the same scrollback. You can't see which one is stuck, and when one goes wrong
+you can't talk to it directly. All you can do is ask the parent to pass a message along. You
+need to see each agent's context.
 
-There is no new UI for the agents themselves. When you select one and press `enter`, you're
-typing into its real session, the same as if you had opened it yourself. `ctrl+]` brings you
-back to the team.
+The second comes from the obvious fix. If the agents have to keep a record for you, that
+record is extra work on top of the change, and every note an agent writes for you is attention
+it didn't spend on the change. An agent should do its work and nothing extra.
+
+So oat-agents has to do three things at once, with as little structure as it can.
+
+## Three things, with the least structure
+
+### A simple structure
+
+A team has two levels: one meta-agent, which splits your goal and hands out the pieces, and
+the member agents it launches. Who is on the team, how the work is split and which skills each
+role loads all live in a plugin. Changing how your team works never means changing oat-agents.
+See [Define your team and its rules with a plugin](#define-your-team-and-its-rules-with-a-plugin).
+
+### No extra work for the agents
+
+A member agent is plain Claude Code or Codex, in its own interactive interface. Besides the
+change, it only sends the meta-agent a report when it's done, or a question when it's blocked.
+oat-agents takes care of the rest: a git worktree and branch for each agent, and a pod for its
+build and test commands when its role asks for one. See
+[Execution and isolation](#execution-and-isolation).
+
+### Context you can see
+
+The live view shows only the flow of information: one row per agent, with its state, diff,
+timeline and log, and the whole team on one screen. When you want to act, select an agent and
+press `enter`. You're typing into its real tmux session, the same as if you had opened it
+yourself. `ctrl+]` brings you back to the team. See [How a Run goes](#how-a-run-goes).
 
 ## How a Run goes
 
