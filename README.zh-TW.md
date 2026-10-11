@@ -10,12 +10,13 @@
 
 <p align="center">
   <b>一個畫面看整個團隊，一個鍵接手任何一個 agent。</b><br>
-  一個 meta-agent 把你的目標分給一整隊 coding agent。每個 agent 都是它自己那個 CLI 的真實 session，
-  各在自己的 branch 上。你在同一個終端機裡看著所有人，隨時可以進去任何一個。
+  一個 meta-agent 只帶一層 member agent。每個 member 都是原生的 Claude Code 或 Codex session，
+  各在自己的 branch 上。你在同一個終端機裡看著整個團隊，隨時可以進去任何一個。
 </p>
 
 <p align="center">
   <a href="#為什麼">為什麼</a> ·
+  <a href="#用最精簡的結構做到三件事">三件事</a> ·
   <a href="#一個-run-怎麼跑">一個 Run 怎麼跑</a> ·
   <a href="#用-plugin-就能制定你的團隊與規則">用 Plugin 制定團隊與規則</a> ·
   <a href="#執行環境與隔離">執行環境與隔離</a> ·
@@ -35,12 +36,27 @@
   <img src="docs/assets/one-session.svg" alt="左邊：很多 agent 擠在同一個 session 裡，每個 subagent 都寫進同一個捲動紀錄，看不出誰卡住，也沒辦法進去任何一個。右邊：同一個團隊在 oat-agents 裡，一個 agent 一列、每列都看得到狀態，每個都是自己的 session、在自己的 branch 上，按 enter 就能接手任何一個。" width="100%">
 </p>
 
-在同一個 session 裡，所有 subagent 的輸出都擠進同一個捲動紀錄。你看不出哪一個卡住了；某一個出錯時，你也沒辦法直接跟它說話，只能請上層的 agent 幫你轉達。
+帶一隊 coding agent，會碰到兩個問題。
 
-oat-agents 把 subagent 從那個 session 裡拿出來。每個 agent 都跑在自己的 tmux session 裡，有自己的
-git worktree 和 branch，用的是那個 agent CLI 原本的互動介面。其中一個叫 meta-agent，負責帶隊：它把你的目標拆成幾塊，每一塊交給一個 member agent。即時檢視把整個團隊放在同一個畫面上，一個 agent 一列。
+第一個是資訊沒辦法好好被呈現、被接收。在同一個 session 裡，所有 subagent 的輸出都擠進同一個捲動紀錄。你看不出哪一個卡住了；某一個出錯時，你也沒辦法直接跟它說話，只能請上層的 agent 幫你轉達。你需要看得清楚每個 agent 的脈絡。
 
-agent 本身沒有另外一套新介面。選一個 agent 按 `enter`，你就是在它真正的 session 裡打字，跟你自己打開它沒有兩樣。按 `ctrl+]` 回到團隊。
+第二個來自最直覺的解法。如果要 agent 自己替你做資訊紀錄，那就是變更之外的額外工作；它替你寫的每一筆紀錄，都是沒花在變更上的注意力，這會造成認知負荷。agent 應該只做事，沒有額外負荷。
+
+所以 oat-agents 要用最少的結構，同時做到三件事。
+
+## 用最精簡的結構做到三件事
+
+### 結構簡單
+
+團隊只有兩層：一個 meta-agent 負責拆目標、分派工作，以及它派出去的 member agent。團隊裡有哪些角色、工作怎麼拆、每個角色載入哪些 skill，都寫在 plugin 裡。要改團隊的做法，從來不需要改 oat-agents。見〈[用 Plugin 就能制定你的團隊與規則](#用-plugin-就能制定你的團隊與規則)〉。
+
+### Agent 沒有額外負荷
+
+member agent 就是原生的 Claude Code 或 Codex，用的是它自己的互動介面。除了變更本身，它只需要在做完時寄報告給 meta-agent，或在卡住時提問。其餘交給 oat-agents：每個 agent 有自己的 git worktree 和 branch，角色需要時再給一個 pod 跑 build 和測試。見〈[執行環境與隔離](#執行環境與隔離)〉。
+
+### 人看得見脈絡
+
+即時檢視只呈現資訊流：一個 agent 一列，看得到它的狀態、diff、timeline 和 log，整個團隊在同一個畫面上。要動手時，選一個 agent 按 `enter`，你就是在它真正的 tmux session 裡打字，跟你自己打開它沒有兩樣。按 `ctrl+]` 回到團隊。見〈[一個 Run 怎麼跑](#一個-run-怎麼跑)〉。
 
 ## 一個 Run 怎麼跑
 
